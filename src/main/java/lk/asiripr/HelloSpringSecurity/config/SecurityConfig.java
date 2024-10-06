@@ -32,18 +32,20 @@ public class SecurityConfig {
 	@Bean
 	public UserDetailsService userDetailsService() {
 		return new InMemoryUserDetailsManager(
-				User.withUsername("dinuja").password("{noop}1234").authorities("READ", "ROLE_USER").build());
+				User.withUsername("dinuja").password("{noop}1234").authorities("READ", "USER").build());
 	}
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		return http
-				.authorizeHttpRequests(auth->auth.anyRequest().hasAuthority("SCOPE_READ"))
-				.sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//				.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-				.httpBasic(Customizer.withDefaults())
-				.build();
+	    return http
+	            .authorizeHttpRequests(auth -> auth
+	                    .requestMatchers("api/auth/token").hasRole("USER") // Role check
+	                    .anyRequest().hasAuthority("READ")) // Change from SCOPE_READ to READ
+	            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	            .httpBasic(Customizer.withDefaults())
+	            .build();
 	}
+
 	
 	@Bean
 	JwtEncoder jwtEncoder() {
